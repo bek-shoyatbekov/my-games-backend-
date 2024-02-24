@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   Delete,
+  HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Post,
   Put,
   UploadedFile,
@@ -12,18 +14,49 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   @Post('/signup')
-  @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: 'public/avatars',
+        filename: (req, file, cb) => {
+          cb(
+            null,
+            file.fieldname +
+              '-' +
+              Date.now() +
+              '.' +
+              file.originalname.split('.').pop(),
+          );
+        },
+      }),
+    }),
+  )
   async createUser(
     @Body() createUserDto: CreateUserDto,
-    @UploadedFile() avatar: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: 'image/*',
+        })
+        .addMaxSizeValidator({
+          maxSize: 10000000,
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    avatar: Express.Multer.File,
   ) {
+    console.log(avatar);
     createUserDto.avatar = avatar.originalname;
+
     return this.userService.create(createUserDto);
   }
 
