@@ -14,6 +14,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
+    console.debug(exception);
+
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -23,21 +25,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
      * @description Exception json response
      * @param message
      */
-    const responseMessage = (type, message) => {
-      response.status(status).json({
-        statusCode: status,
-        path: request.url,
-        errorType: type,
-        errorMessage: message,
-      });
-    };
+    // const responseMessage = (type, message) => {
+    //   response.status(status).json({
+    //     statusCode: status,
+    //     path: request.url,
+    //     errorType: type,
+    //     errorMessage: message,
+    //   });
+    // };
 
-    // Throw an exceptions for either
-    // MongoError, ValidationError, TypeError, CastError and Error
-    if (exception.message) {
-      responseMessage('Error', exception.message);
-    } else {
-      responseMessage(exception.name, exception.message);
-    }
+    response.status(status).json(exception.getResponse());
   }
 }

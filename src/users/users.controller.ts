@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  HttpCode,
   HttpStatus,
   Param,
   ParseFilePipeBuilder,
@@ -11,36 +12,32 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
-
   @Post('/signup')
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
         destination: 'public/avatars',
         filename: (req, file, cb) => {
-          cb(
-            null,
-            file.fieldname +
-              '-' +
-              Date.now() +
-              '.' +
-              file.originalname.split('.').pop(),
-          );
+          cb(null, Date.now() + '.' + file.originalname.split('.').pop());
         },
       }),
     }),
   )
-  async createUser(
-    @Body(ValidationPipe) createUserDto: CreateUserDto,
+
+  
+  async create(
+    @Body() createUserDto: CreateUserDto,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -55,14 +52,16 @@ export class UsersController {
     )
     avatar: Express.Multer.File,
   ) {
-    console.log(avatar);
     createUserDto.avatar = avatar.originalname;
 
-    return this.userService.create(createUserDto);
+    const createdUser = await this.userService.create(createUserDto);
+    console.log('Created User ', createdUser);
+    return createdUser;
   }
 
   @Put('/update/:userId')
-  async updateUser(
+  @HttpCode(HttpStatus.OK)
+  async update(
     @Param('userId') userId: string,
     @Body(ValidationPipe) updateUserDto: UpdateUserDto,
   ) {
@@ -70,7 +69,8 @@ export class UsersController {
   }
 
   @Delete('/delete/:userId')
-  async deleteUser(@Param('userId') userId: string) {
+  @HttpCode(HttpStatus.OK)
+  async delete(@Param('userId') userId: string) {
     return this.userService.remove(userId);
   }
 }
