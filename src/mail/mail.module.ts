@@ -3,8 +3,6 @@ import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { ConfigModule } from '@nestjs/config';
 
-console.log(process.env.EMAIL_HOST, process.env.EMAIL_USER);
-
 @Global()
 @Module({
   imports: [

@@ -34,10 +34,8 @@ export class UsersController {
       }),
     }),
   )
-
-  
   async create(
-    @Body() createUserDto: CreateUserDto,
+    @Body(ValidationPipe) createUserDto: CreateUserDto,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -55,7 +53,7 @@ export class UsersController {
     createUserDto.avatar = avatar.originalname;
 
     const createdUser = await this.userService.create(createUserDto);
-    console.log('Created User ', createdUser);
+
     return createdUser;
   }
 

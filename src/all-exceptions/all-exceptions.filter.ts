@@ -7,14 +7,12 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 
-@Catch()
+@Catch(HttpException)
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: InternalServerErrorException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
-
-    console.debug(exception);
 
     const status =
       exception instanceof HttpException
