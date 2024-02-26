@@ -9,6 +9,7 @@ import {
   Put,
   UploadedFile,
   UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -39,7 +40,7 @@ export class UsersController {
     }),
   )
   async createUser(
-    @Body() createUserDto: CreateUserDto,
+    @Body(ValidationPipe) createUserDto: CreateUserDto,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -63,7 +64,7 @@ export class UsersController {
   @Put('/update/:userId')
   async updateUser(
     @Param('userId') userId: string,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
   ) {
     return this.userService.update(userId, updateUserDto);
   }
