@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -23,33 +24,24 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
   @Post('/signup')
-  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
         destination: 'public/avatars',
         filename: (req, file, cb) => {
-          cb(null, Date.now() + '.' + file.originalname.split('.').pop());
+          return cb(
+            null,
+            Date.now() + '.' + file.originalname.split('.').pop(),
+          );
         },
       }),
     }),
   )
-  async create(
-    @Body(ValidationPipe) createUserDto: CreateUserDto,
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: 'image/*',
-        })
-        .addMaxSizeValidator({
-          maxSize: 10000000,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
-    )
-    avatar: Express.Multer.File,
+  async register(
+    @Body() createUserDto: CreateUserDto,
+    @UploadedFile() avatar: Express.Multer.File,
   ) {
+    console.log('Coming here', avatar);
     createUserDto.avatar = avatar.originalname;
 
     const createdUser = await this.userService.create(createUserDto);
@@ -59,7 +51,7 @@ export class UsersController {
 
   @Put('/update/:userId')
   @HttpCode(HttpStatus.OK)
-  async update(
+  async updateProfile(
     @Param('userId') userId: string,
     @Body(ValidationPipe) updateUserDto: UpdateUserDto,
   ) {
@@ -68,7 +60,7 @@ export class UsersController {
 
   @Delete('/delete/:userId')
   @HttpCode(HttpStatus.OK)
-  async delete(@Param('userId') userId: string) {
+  async deleteProfile(@Param('userId') userId: string) {
     return this.userService.remove(userId);
   }
 }

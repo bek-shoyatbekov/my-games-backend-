@@ -19,19 +19,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    /**
-     * @description Exception json response
-     * @param message
-     */
-    // const responseMessage = (type, message) => {
-    //   response.status(status).json({
-    //     statusCode: status,
-    //     path: request.url,
-    //     errorType: type,
-    //     errorMessage: message,
-    //   });
-    // };
-
     response.status(status).json(exception.getResponse());
   }
 }
